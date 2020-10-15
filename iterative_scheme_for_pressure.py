@@ -1,8 +1,8 @@
 # Python Implementation of Iterative Scheme for Finding the Pressure 
 # Erin Sam Joe | NITK '23 | Mechanical Engg. Major | Electrical & Electronics Minor 
 
-# Script uses the Newton-Raphson iterative procedure to find the pressure function 
-# of the Reimann Problem with ideal gas Equation of State 
+# Script uses the Newton-Raphson iterative procedure to find the root of the 
+# pressure function, of the Reimann Problem with ideal gas Equation of State 
 
 # The value of pressure in the star region can then be used to solve for the value 
 # of velocity in the star region. From the velocity and pressure, we can then find 
@@ -11,6 +11,7 @@
 
 import numpy as np
 import math as m
+from single_variable_root_finding import newton_raphson_method as nrm 
 
 
 def star_region_pressure():
@@ -50,8 +51,19 @@ def star_region_pressure():
     g_L = m.sqrt(A_L/(p_0+B_L))
     p_TS = ( g_L*p_L + g_R*p_R - (u_R - u_L) )/( g_L + g_R )
     p_00 = max(TOL, p_TS)
-    
+   
 
+ 
+    # Using Newton Raphson Method to find the root of the pressure function
+    # Using Two-Rarefaction Approximation:
+    p_star_1 = nrm(pressure_func, d_pressure_func, p_TR, p_L=p_L, p_R=p_R, rho_L=rho_L, rho_R=rho_R, u_L, u_R, a_L=a_L, a_R=a_R, A_L=A_L, A_R=A_R, B_L=B_L, B_R=B_R)
+    ## Using Approximation from a Linearised Solution based on Primitive Variables  
+    # p_star_2 = nrm(pressure_func, d_pressure_func, p_0, p_L=p_L, p_R=p_R, rho_L=rho_L, rho_R=rho_R, u_L, u_R, a_L=a_L, a_R=a_R, A_L=A_L, A_R=A_R, B_L=B_L, B_R=B_R)
+    ## Using Two-Shock Approximation
+    # p_star_3 = nrm(pressure_func, d_pressure_func, p_00, p_L=p_L, p_R=p_R, rho_L=rho_L, rho_R=rho_R, u_L, u_R, a_L=a_L, a_R=a_R, A_L=A_L, A_R=A_R, B_L=B_L, B_R=B_R)
+
+    print("The value of pressure in the star regio, p*: ")
+    print(p_star_1)    
 
 
 # Defining the pressure function 
