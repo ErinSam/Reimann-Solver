@@ -6,12 +6,15 @@
 
 # The value of pressure in the star region can then be used to solve for the value 
 # of velocity in the star region. From the velocity and pressure, we can then find 
-# density and remaining unknowns using standard gas dynamics relations 
+# density and remaining unknowns using standard gas dynamics relations
+
+#######################################################################################################
+####################################################################################################### 
 
 
 import numpy as np
 import math as m
-from single_variable_root_finding import newton_raphson_method as nrm 
+from single_variable_root_finding import *
 
 
 def star_region_pressure():
@@ -43,31 +46,35 @@ def star_region_pressure():
     # 3 Kinds of Initial Approximations
     # Two-Rarefaction Approximation 
     p_TR = pow( (a_L + a_R - 0.5*(c_ratio-1)*(u_R-u_L))/( (a_L/pow(p_L, (c_ratio-1)/(2*c_ratio))) +(a_R/pow(p_R, (c_ratio-1)/(2*c_ratio))) ), (2*c_ratio)/(c_ratio-1) )
-    # Approximation from a Linearised Solution based on Primitive Variables
-    p_PV = 0.5 * (p_L + p_r) - 0.125 * (u_R - u_L)*(rho_L + rho_R)*(a_L + a_R)
-    p_0 = max(TOL, p_PV) 
-    # Two-Shock Approximation 
-    g_R = m.sqrt(A_R/(p_0+B_R))
-    g_L = m.sqrt(A_L/(p_0+B_L))
-    p_TS = ( g_L*p_L + g_R*p_R - (u_R - u_L) )/( g_L + g_R )
-    p_00 = max(TOL, p_TS)
+    ## Approximation from a Linearised Solution based on Primitive Variables
+    # p_PV = 0.5 * (p_L + p_R) - 0.125 * (u_R - u_L)*(rho_L + rho_R)*(a_L + a_R)
+    # p_0 = max(TOL, p_PV) 
+    ## Two-Shock Approximation 
+    # g_R = m.sqrt(A_R/(p_0+B_R))
+    # g_L = m.sqrt(A_L/(p_0+B_L))
+    # p_TS = ( g_L*p_L + g_R*p_R - (u_R - u_L) )/( g_L + g_R )
+    # p_00 = max(TOL, p_TS)
    
 
  
     # Using Newton Raphson Method to find the root of the pressure function
     # Using Two-Rarefaction Approximation:
-    p_star_1 = nrm(pressure_func, d_pressure_func, p_TR, p_L=p_L, p_R=p_R, rho_L=rho_L, rho_R=rho_R, u_L, u_R, a_L=a_L, a_R=a_R, A_L=A_L, A_R=A_R, B_L=B_L, B_R=B_R)
+    p_star_1 = newton_raphson_method(pressure_func, d_pressure_func, p_TR, p_L=p_L, p_R=p_R, rho_L=rho_L, rho_R=rho_R, u_L=u_L, u_R=u_R, a_L=a_L, a_R=a_R, A_L=A_L, A_R=A_R, B_L=B_L, B_R=B_R, c_ratio=c_ratio)
     ## Using Approximation from a Linearised Solution based on Primitive Variables  
-    # p_star_2 = nrm(pressure_func, d_pressure_func, p_0, p_L=p_L, p_R=p_R, rho_L=rho_L, rho_R=rho_R, u_L, u_R, a_L=a_L, a_R=a_R, A_L=A_L, A_R=A_R, B_L=B_L, B_R=B_R)
+    # p_star_2 = nrm(pressure_func, d_pressure_func, p_0, p_L=p_L, p_R=p_R, rho_L=rho_L, rho_R=rho_R, u_L=u_L, u_R=u_R, a_L=a_L, a_R=a_R, A_L=A_L, A_R=A_R, B_L=B_L, B_R=B_R, c_ratio=c_ratio)
     ## Using Two-Shock Approximation
-    # p_star_3 = nrm(pressure_func, d_pressure_func, p_00, p_L=p_L, p_R=p_R, rho_L=rho_L, rho_R=rho_R, u_L, u_R, a_L=a_L, a_R=a_R, A_L=A_L, A_R=A_R, B_L=B_L, B_R=B_R)
+    # p_star_3 = nrm(pressure_func, d_pressure_func, p_00, p_L=p_L, p_R=p_R, rho_L=rho_L, rho_R=rho_R, u_L=u_L, u_R=u_R, a_L=a_L, a_R=a_R, A_L=A_L, A_R=A_R, B_L=B_L, B_R=B_R, c_ratio=c_ratio)
 
-    print("The value of pressure in the star regio, p*: ")
+    print("The value of pressure in the star region, p*: ")
     print(p_star_1)    
 
 
 # Defining the pressure function 
 def pressure_func(p, **kwargs):
+    # TEST 
+    print(kwargs['p_L'])
+    print(p_L)
+
     
     # function L is given by 
     def f_L():
@@ -108,4 +115,8 @@ def d_pressure_func(p, **kwargs):
 
 
 
+#######################################################################################################
+#######################################################################################################
+
+star_region_pressure()
 

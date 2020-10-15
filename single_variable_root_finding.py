@@ -12,7 +12,7 @@ def newton_raphson_method(f, f_dash, initial_approximation, **kwargs):
 
     count = 0
 
-    approximate_solution = newton_raphson_iteration_step(start_step_value, tolerance, count, iteration_limit)
+    approximate_solution = newton_raphson_iteration_step(start_step_value, tolerance, count, iteration_limit, f, f_dash, **kwargs)
     if ( approximate_solution != None ):
         print("The approximate solution for the zero of the given function by Newton Raphson Method is: ")
         print(approximate_solution)
@@ -30,7 +30,7 @@ def newton_raphson_iteration_step(step_value, tolerance, count, iteration_limit,
     if ( (abs(updated_step_value - step_value) <= tolerance) | (f(updated_step_value, **kwargs) == 0)):
         return updated_step_value
     else: 
-        return newton_raphson_iteration_step(updated_step_value, tolerance, count, iteration_limit)
+        return newton_raphson_iteration_step(updated_step_value, tolerance, count, iteration_limit, f, f_dash, **kwargs)
 
 
 
