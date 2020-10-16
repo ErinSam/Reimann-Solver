@@ -27,7 +27,7 @@ def exact_reimann_solver():
 
     # Obtaining the number of data points and the time step user wants the exact solution for
     # num_data_points = int(input("\nEnter the number of data points you want values to be obtained for: "))
-    dx = float(input("\nEnter the value of dx: "))
+    dx = float(input("\nEnter the value of dx (consider 'dx' as a measure of the accuracy you want the solution to have): "))
     t = float(input("Enter the time step that you want the exact solution for: "))
     
     # Speed of sound in the driver and driven regions
@@ -49,6 +49,14 @@ def exact_reimann_solver():
     # W[0,] represents pressure
     # W[1,] represents velocity 
     # W[2,] represents density 
+    
+    # Using two matrices W_L and W_R
+    # where W_L is used to obtain and store the values of the primitive variables to 
+    # the left of contact discontinuity. Iterations will move from the contact discontinuity 
+    # to 50 data points into the left region comprising of initial driver conditions 
+    # where W_R is used to obtain and store the value of primitive variables to the right of 
+    # the contact discontinuity. Iterations will move from the contact discontinuity 
+    # to 50 data points into the right region comprising of initial driven condtions  
     W_L = np.zeros((3, 10000)) 
     W_R = np.zeros((3, 10000))
     
@@ -59,7 +67,7 @@ def exact_reimann_solver():
     self_sim_param = 0
     if ( p_star <= p_L ):
         # Left wave is an expansion wave 
-        print("Left wave is an expansion wave")
+        print("\nWave to the Left of the Contact Discontinuity is an Expansion Wave")
         rho_star_L = rho_L * pow(p_star/p_L, 1/c_ratio)
         S_HL = u_L - a_L
         S_TL = u_star - m.sqrt(c_ratio * p_star / rho_star_L)
@@ -87,7 +95,7 @@ def exact_reimann_solver():
 
     else:
         # Left wave is a shock wave
-        print("Left wave is a shock wave")
+        print("\nWave to the Left of the Contact Discontinuity is a Shock Wave")
         rho_star_L = rho_L * ( (p_star/p_L) + (c_ratio-1)/(c_ratio+1) ) / ( (c_ratio-1)/(c_ratio+1)*(p_star/p_L) + 1 )
         S_L = u_L + a_L * m.sqrt( (c_ratio+1)/(2*c_ratio) * p_star/p_L + (c_ratio-1)/(2*c_ratio) )
         print("Left Shock Speed: ", S_L)
@@ -108,13 +116,8 @@ def exact_reimann_solver():
             self_sim_param -= dx/t
 
     # Slicing and flipping the matrix. Preparing it for concatenation
-    print("Number of iteration for L: ", count, L_count)
-    print("\n\nW_L looks before splicing like:")
-    print(W_L)
     W_L = W_L[:,:count-1]
     W_L = np.flip(W_L, 1)
-    print("\n\nW_L looks like:")
-    print(W_L)
 
 
     # Obtaining Exact Solution for Right of Contact Discontinuity  
@@ -123,7 +126,7 @@ def exact_reimann_solver():
     self_sim_param = 0
     if ( p_star <= p_R ):
         # Right wave is an expansion wave 
-        print("Right wave is an expansion wave")
+        print("\nWave to the Right of the Contact Discontinuity is an Expansion Wave")
         rho_star_R = rho_R * pow(p_star/p_R, 1/c_ratio)
         S_HR = u_R + a_R
         S_TR = u_star + m.sqrt(c_ratio * p_star / rho_star_R)
@@ -151,7 +154,7 @@ def exact_reimann_solver():
 
     else:
         # Right wave is a shock wave
-        print("Right wave is a shock wave")
+        print("\nWave to the Right of the Contact Discontinuity is a Shock Wave")
         rho_star_R = rho_R * ( (p_star/p_R) + (c_ratio-1)/(c_ratio+1) ) / ( (c_ratio-1)/(c_ratio+1)*(p_star/p_R) + 1 )
         S_R = u_R + a_R * m.sqrt( (c_ratio+1)/(2*c_ratio) * p_star/p_R + (c_ratio-1)/(2*c_ratio) )
         print("Right Shock Speed: ", S_R)
@@ -172,17 +175,12 @@ def exact_reimann_solver():
             self_sim_param += dx/t
 
     # Preparing the matrix for concatenation
-    print("Number of iteration for R: ", count, R_count)
-    print("\n\nW_R looks before splicing like:")
-    print(W_R)
     W_R = W_R[:,:count-1]
-    print("\n\nW_R looks like:")
-    print(W_R)
 
     
     # Concatenating the matrices
     W = np.concatenate((W_L, W_R), axis=1)
-    # Making the x-axis array ... is this necessary?
+    # Making the x-axis array 
     X = np.array(range(np.shape(W)[1]))
 
     # Displaying
@@ -199,16 +197,23 @@ def exact_reimann_solver():
 
     plt.subplot(311)
     plt.plot(X, W[0,])
+    plt.title("Exact solution for Pressure")
     plt.ylabel("Pressure")
+    plt.xlabel("Position")
     
     plt.subplot(312)
     plt.plot(X, W[1,])
+    plt.title("Exact solution for Velocity")
     plt.ylabel("Velocity")
+    plt.xlabel("Position")
 
     plt.subplot(313)
     plt.plot(X, W[2,])
+    plt.title("Exact solution for Density")
     plt.ylabel("Density")
+    plt.xlabel("Position")
    
+    plt.tight_layout()
     plt.show()
 
 #######################################################################################################

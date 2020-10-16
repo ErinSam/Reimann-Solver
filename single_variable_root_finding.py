@@ -5,6 +5,7 @@
 ########################################################################################################
 
 def newton_raphson_method(f, f_dash, initial_approximation, **kwargs):
+
     # start_step_value = float(input("Enter the value for the initial approximation: "))
     # tolerance = float(input("\nEnter the error tolerance for root finding method: "))
     # iteration_limit = float(input("Enter the iteration limit for the method: "))
@@ -12,13 +13,10 @@ def newton_raphson_method(f, f_dash, initial_approximation, **kwargs):
     tolerance = 1e-6
     iteration_limit = 20
 
-
     count = 0
-
     approximate_solution = newton_raphson_iteration_step(start_step_value, tolerance, count, iteration_limit, f, f_dash, **kwargs)
     if ( approximate_solution != None ):
         return approximate_solution
-
 
 
 def newton_raphson_iteration_step(step_value, tolerance, count, iteration_limit, f, f_dash, **kwargs):

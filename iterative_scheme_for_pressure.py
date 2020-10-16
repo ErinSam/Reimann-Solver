@@ -49,7 +49,6 @@ def star_region_properties(**kwargs):
     # p_00 = max(TOL, p_TS)
    
 
- 
     # Calculating the pressure in the star region
     # Using Two-Rarefaction Approximation:
     p_star = newton_raphson_method(pressure_func, d_pressure_func, p_TR, p_L=p_L, p_R=p_R, rho_L=rho_L, rho_R=rho_R, u_L=u_L, u_R=u_R, a_L=a_L, a_R=a_R, A_L=A_L, A_R=A_R, B_L=B_L, B_R=B_R, c_ratio=c_ratio, calc="pressure")
@@ -61,25 +60,14 @@ def star_region_properties(**kwargs):
 
     # Calculating the velocity in the Star Region 
     u_star = 0.5 * (u_L + u_R) + 0.5 * pressure_func(p_star, p_L=p_L, p_R=p_R, rho_L=rho_L, rho_R=rho_R, u_L=u_L, u_R=u_R, a_L=a_L, a_R=a_R, A_L=A_L, A_R=A_R, B_L=B_L, B_R=B_R, c_ratio=c_ratio, calc="velocity") 
-    
-    # Calculating the densities in the Star Region
-    # rho_star_L = rho_L * ( ( (p_star/p_L) + (c_ratio-1)/(c_ratio+1) )/( (c_ratio-1)/(c_ratio+1)*(p_star/p_L) + 1) )
-    # rho_star_R = rho_R * ( ( (p_star/p_R) + (c_ratio-1)/(c_ratio+1) )/( (c_ratio-1)/(c_ratio+1)*(p_star/p_R) + 1) )
-
-    
-    # Printing the values
-    # print("\n\nThe value of pressure in the star region, p*: ", p_star)
-    # print("The value of velocity in the star region, u*: ", u_star)
-    # print("The value of density in the left star region, rho*L: ", rho_star_L)
-    # print("The value of density in the right star region, rho*R: ", rho_star_R)
 
     return p_star, u_star
+
 
 
 # Defining the pressure function 
 def pressure_func(p, **kwargs):
 
-    # Ignore the poor implementation
     p_L = kwargs['p_L'] 
     p_R = kwargs['p_R'] 
     rho_L = kwargs['rho_L'] 
@@ -118,7 +106,6 @@ def pressure_func(p, **kwargs):
 # Defining first dervative of the pressure function
 def d_pressure_func(p, **kwargs):
 
-    # Ignore the poor implementation
     p_L = kwargs['p_L'] 
     p_R = kwargs['p_R'] 
     rho_L = kwargs['rho_L'] 
