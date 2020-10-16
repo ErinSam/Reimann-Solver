@@ -17,35 +17,28 @@ import math as m
 from single_variable_root_finding import *
 
 
-def star_region_properties():
+def star_region_properties(**kwargs):
     
-    # Specific Heat Ratio 
-    c_ratio = 1.4
-
-    # Denoting the driver region with L and the driven region with R 
-    # Obtaining initial conditons for pressure, density and velocity of the driver 
-    # and driven region
-    p_L = float(input("Enter the value of pressure in the driver region (L): "))
-    p_R = float(input("Enter the value of pressure in the driven region (R): ")) 
-    rho_L = float(input("Enter the value of density in the driver region (L): "))
-    rho_R = float(input("Enter the value of density in the driven region (R): ")) 
-    u_L = float(input("Enter the value of velocity in the driver region (L): ")) 
-    u_R = float(input("Enter the value of velocity in the driven region (R): "))
-    
-    # Speed of sound in the driver and driven regions
-    a_L = m.sqrt(c_ratio * p_L/rho_L)
-    a_R = m.sqrt(c_ratio * p_R/rho_R)
-
-    # Initialising the values of the data-dependent constants A_L, B_L, A_R, B_R
-    A_L = 2 / ((c_ratio+1)*rho_L)
-    B_L = p_L * (c_ratio-1)/(c_ratio+1)
-    A_R = 2 / ((c_ratio+1)*rho_R)
-    B_R = p_R * (c_ratio-1)/(c_ratio+1)
+    # Ignore the poor implementation
+    p_L = kwargs['p_L'] 
+    p_R = kwargs['p_R'] 
+    rho_L = kwargs['rho_L'] 
+    rho_R = kwargs['rho_R'] 
+    u_L = kwargs['u_L'] 
+    u_R = kwargs['u_R'] 
+    a_L = kwargs['a_L'] 
+    a_R = kwargs['a_R'] 
+    A_L = kwargs['A_L'] 
+    A_R = kwargs['A_R'] 
+    B_L = kwargs['B_L'] 
+    B_R = kwargs['B_R'] 
+    c_ratio = kwargs['c_ratio'] 
 
 
     # 3 Kinds of Initial Approximations
     # Two-Rarefaction Approximation 
     p_TR = pow( (a_L + a_R - 0.5*(c_ratio-1)*(u_R-u_L))/( (a_L/pow(p_L, (c_ratio-1)/(2*c_ratio))) +(a_R/pow(p_R, (c_ratio-1)/(2*c_ratio))) ), (2*c_ratio)/(c_ratio-1) )
+    
     ## Approximation from a Linearised Solution based on Primitive Variables
     # p_PV = 0.5 * (p_L + p_R) - 0.125 * (u_R - u_L)*(rho_L + rho_R)*(a_L + a_R)
     # p_0 = max(TOL, p_PV) 
@@ -60,6 +53,7 @@ def star_region_properties():
     # Calculating the pressure in the star region
     # Using Two-Rarefaction Approximation:
     p_star = newton_raphson_method(pressure_func, d_pressure_func, p_TR, p_L=p_L, p_R=p_R, rho_L=rho_L, rho_R=rho_R, u_L=u_L, u_R=u_R, a_L=a_L, a_R=a_R, A_L=A_L, A_R=A_R, B_L=B_L, B_R=B_R, c_ratio=c_ratio, calc="pressure")
+    
     ## Using Approximation from a Linearised Solution based on Primitive Variables  
     # p_star_2 = nrm(pressure_func, d_pressure_func, p_0, p_L=p_L, p_R=p_R, rho_L=rho_L, rho_R=rho_R, u_L=u_L, u_R=u_R, a_L=a_L, a_R=a_R, A_L=A_L, A_R=A_R, B_L=B_L, B_R=B_R, c_ratio=c_ratio)
     ## Using Two-Shock Approximation
@@ -69,16 +63,17 @@ def star_region_properties():
     u_star = 0.5 * (u_L + u_R) + 0.5 * pressure_func(p_star, p_L=p_L, p_R=p_R, rho_L=rho_L, rho_R=rho_R, u_L=u_L, u_R=u_R, a_L=a_L, a_R=a_R, A_L=A_L, A_R=A_R, B_L=B_L, B_R=B_R, c_ratio=c_ratio, calc="velocity") 
     
     # Calculating the densities in the Star Region
-    rho_star_L = rho_L * ( ( (p_star/p_L) + (c_ratio-1)/(c_ratio+1) )/( (c_ratio-1)/(c_ratio+1)*(p_star/p_L) + 1) )
-    rho_star_R = rho_R * ( ( (p_star/p_R) + (c_ratio-1)/(c_ratio+1) )/( (c_ratio-1)/(c_ratio+1)*(p_star/p_R) + 1) )
+    # rho_star_L = rho_L * ( ( (p_star/p_L) + (c_ratio-1)/(c_ratio+1) )/( (c_ratio-1)/(c_ratio+1)*(p_star/p_L) + 1) )
+    # rho_star_R = rho_R * ( ( (p_star/p_R) + (c_ratio-1)/(c_ratio+1) )/( (c_ratio-1)/(c_ratio+1)*(p_star/p_R) + 1) )
 
     
     # Printing the values
-    print("\n\nThe value of pressure in the star region, p*: ", p_star)
-    print("The value of velocity in the star region, u*: ", u_star)
-    print("The value of density in the left star region, rho*L: ", rho_star_L)
-    print("The value of density in the right star region, rho*R: ", rho_star_R)
+    # print("\n\nThe value of pressure in the star region, p*: ", p_star)
+    # print("The value of velocity in the star region, u*: ", u_star)
+    # print("The value of density in the left star region, rho*L: ", rho_star_L)
+    # print("The value of density in the right star region, rho*R: ", rho_star_R)
 
+    return p_star, u_star
 
 
 # Defining the pressure function 
@@ -159,5 +154,5 @@ def d_pressure_func(p, **kwargs):
 #######################################################################################################
 #######################################################################################################
 
-star_region_properties()
+# star_region_properties()
 
