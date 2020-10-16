@@ -65,16 +65,28 @@ def star_region_pressure():
     ## Using Two-Shock Approximation
     # p_star_3 = nrm(pressure_func, d_pressure_func, p_00, p_L=p_L, p_R=p_R, rho_L=rho_L, rho_R=rho_R, u_L=u_L, u_R=u_R, a_L=a_L, a_R=a_R, A_L=A_L, A_R=A_R, B_L=B_L, B_R=B_R, c_ratio=c_ratio)
 
-    print("The value of pressure in the star region, p*: ")
-    print(p_star_1)    
+    print("\n\nThe value of pressure in the star region, p*: ", p_star_1)
+
+
 
 
 # Defining the pressure function 
 def pressure_func(p, **kwargs):
-    # TEST 
-    print(kwargs['p_L'])
-    print(p_L)
 
+    # Ignore the poor implementation
+    p_L = kwargs['p_L'] 
+    p_R = kwargs['p_R'] 
+    rho_L = kwargs['rho_L'] 
+    rho_R = kwargs['rho_R'] 
+    u_L = kwargs['u_L'] 
+    u_R = kwargs['u_R'] 
+    a_L = kwargs['a_L'] 
+    a_R = kwargs['a_R'] 
+    A_L = kwargs['A_L'] 
+    A_R = kwargs['A_R'] 
+    B_L = kwargs['B_L'] 
+    B_R = kwargs['B_R'] 
+    c_ratio = kwargs['c_ratio'] 
     
     # function L is given by 
     def f_L():
@@ -96,6 +108,21 @@ def pressure_func(p, **kwargs):
 
 # Defining first dervative of the pressure function
 def d_pressure_func(p, **kwargs):
+
+    # Ignore the poor implementation
+    p_L = kwargs['p_L'] 
+    p_R = kwargs['p_R'] 
+    rho_L = kwargs['rho_L'] 
+    rho_R = kwargs['rho_R'] 
+    u_L = kwargs['u_L'] 
+    u_R = kwargs['u_R'] 
+    a_L = kwargs['a_L'] 
+    a_R = kwargs['a_R'] 
+    A_L = kwargs['A_L'] 
+    A_R = kwargs['A_R'] 
+    B_L = kwargs['B_L'] 
+    B_R = kwargs['B_R'] 
+    c_ratio = kwargs['c_ratio'] 
 
     # first derivative of function L is given by 
     def d_f_L():

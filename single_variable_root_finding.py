@@ -7,15 +7,14 @@ def newton_raphson_method(f, f_dash, initial_approximation, **kwargs):
     # start_step_value = float(input("Enter the value for the initial approximation: "))
     start_step_value = initial_approximation
 
-    tolerance = float(input("Enter the error tolerance for root finding method: "))
+    tolerance = float(input("\nEnter the error tolerance for root finding method: "))
     iteration_limit = float(input("Enter the iteration limit for the method: "))
 
     count = 0
 
     approximate_solution = newton_raphson_iteration_step(start_step_value, tolerance, count, iteration_limit, f, f_dash, **kwargs)
     if ( approximate_solution != None ):
-        print("The approximate solution for the zero of the given function by Newton Raphson Method is: ")
-        print(approximate_solution)
+        return approximate_solution
 
 
 
