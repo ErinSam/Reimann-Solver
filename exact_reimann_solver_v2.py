@@ -84,7 +84,7 @@ def exact_reimann_solver():
             elif ( self_sim_param <= S_TL ):
                 W_L[0, count] = p_L * pow(( (2/(c_ratio+1)) + (c_ratio-1)/(a_L*(c_ratio+1)) * (u_L - self_sim_param) ), 2*c_ratio/(c_ratio-1) )
                 W_L[1, count] = 2/(c_ratio+1) * ( a_L + u_L * (c_ratio-1)/2 + self_sim_param )
-                W_L[2, count] = rho_L * pow(( (2/(c_ratio+1)) + (c_ratio-1)/(a_L*(c_ratio+1)) * (u_L - self_sim_param) ), 2*c_ratio/(c_ratio-1) )
+                W_L[2, count] = rho_L * pow(( (2/(c_ratio+1)) + (c_ratio-1)/(a_L*(c_ratio+1)) * (u_L - self_sim_param) ), 2/(c_ratio-1) )
             else: 
                 W_L[0, count] = p_star
                 W_L[1, count] = u_star
@@ -97,7 +97,7 @@ def exact_reimann_solver():
         # Left wave is a shock wave
         print("\nWave to the Left of the Contact Discontinuity is a Shock Wave")
         rho_star_L = rho_L * ( (p_star/p_L) + (c_ratio-1)/(c_ratio+1) ) / ( (c_ratio-1)/(c_ratio+1)*(p_star/p_L) + 1 )
-        S_L = u_L + a_L * m.sqrt( (c_ratio+1)/(2*c_ratio) * p_star/p_L + (c_ratio-1)/(2*c_ratio) )
+        S_L = u_L - a_L * m.sqrt( (c_ratio+1)/(2*c_ratio) * p_star/p_L + (c_ratio-1)/(2*c_ratio) )
         print("Left Shock Speed: ", S_L)
 
         for count in range(10000):
@@ -108,6 +108,7 @@ def exact_reimann_solver():
                 L_count += 1
                 if ( L_count > 50 ): break
             else:
+                print("preparing right star region in the case of right shock")
                 W_L[0, count] = p_star
                 W_L[1, count] = u_star
                 W_L[2, count] = rho_star_L
@@ -134,14 +135,14 @@ def exact_reimann_solver():
         print("Right Shock Tail Speed: ", S_TR)
 
         for count in range(10000):
-            if ( self_sim_param <= S_HR ):
+            if ( self_sim_param <= S_TR ):
                 W_R[0, count] = p_star
                 W_R[1, count] = u_star
                 W_R[2, count] = rho_star_R
-            elif ( self_sim_param <= S_TR ):
-                W_R[0, count] = p_R * pow(( (2/(c_ratio+1)) + (c_ratio-1)/(a_R*(c_ratio+1)) * (u_R - self_sim_param) ), 2*c_ratio/(c_ratio-1) )
+            elif ( self_sim_param <= S_HR ):
+                W_R[0, count] = p_R * pow(( (2/(c_ratio+1)) - (c_ratio-1)/(a_R*(c_ratio+1)) * (u_R - self_sim_param) ), 2*c_ratio/(c_ratio-1) )
                 W_R[1, count] = 2/(c_ratio+1) * ( -a_R + u_R * (c_ratio-1)/2 + self_sim_param )
-                W_R[2, count] = rho_R * pow(( (2/(c_ratio+1)) + (c_ratio-1)/(a_R*(c_ratio+1)) * (u_R - self_sim_param) ), 2*c_ratio/(c_ratio-1) )
+                W_R[2, count] = rho_R * pow(( (2/(c_ratio+1)) - (c_ratio-1)/(a_R*(c_ratio+1)) * (u_R - self_sim_param) ), 2/(c_ratio-1) )
             else: 
                 W_R[0, count] = p_R
                 W_R[1, count] = u_R
