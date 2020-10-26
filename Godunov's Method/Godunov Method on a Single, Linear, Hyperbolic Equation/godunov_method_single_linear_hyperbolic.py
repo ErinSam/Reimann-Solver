@@ -126,7 +126,7 @@ def godunov_method_single_linear_hyperbolic():
     t = 0
     dx = length / (num_data_pts + 1)
     while ( t <= time_period ):
-        for i range( num_time_steps + 1):
+        for i range( num_data_pts + 1):
             rp = np.array([u[i], u[i+1]])
             u_half[i], S[i] = reimann_problem(rp)
             flux[i] = flux_function(u_half[i])
