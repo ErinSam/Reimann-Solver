@@ -104,36 +104,36 @@ def godunov_method_single_linear_hyperbolic():
         This function also produces plots after a defined number of time steps
     """
 
-    length = float(input("\nEnter the length of the data line: ")                                                                       # CHANGE print statement 
+    length = float(input("\nEnter the length of the data line: ")) 
     num_data_pts = int(input("Enter the number of data (the precision to which) the 
-                                solution should be obtained for: ")
+                                solution should be obtained for: "))
     time_period = float(input("\nEnter the time period for which the solution should
-                                be obtained")
+                                be obtained"))
+    cfl = float(input("CFL coefficient: "))
     print("\nUser should note that the value incremental value for each time step will 
-                                be obtained by applying the CFL stability condition.")
+                                be obtained by applying the CFL stability condition."))
     
 
     # Initialising the values for Godunov's Method at t = 0
     u = initiali_tsar(length, num_data_pts)
 
-    # Obtaining the value of dt using the CFL stability condition
-    dt =                                                                                                                                # ADD function to calc dt  
-    num_time_steps = time_period / dt + 1
 
     # GODUNOV'S METHOD
     u_half = np.zeros(num_data_pts + 1)
     S = np.zeros(num_data_pts + 1)
     flux = np.zeros(num_data_pts + 1)
 
-    for t in range (num_time_steps):
+    t = 0
+    dx = length / (num_data_pts + 1)
+    while ( t <= time_period ):
         for i range( num_time_steps + 1):
             rp = np.array([u[i], u[i+1]])
             u_half[i], S[i] = reimann_problem(rp)
             flux[i] = flux_function(u_half[i])
             
         # The Godunov Update Step
-        u[1:-1] += np.max(S) / dx * (flux[:-1] - flux[1:])
-        
+        u[1:-1] += cfl / np.max(S) * (flux[:-1] - flux[1:])
+        t += cfl * dx / np.max(S)
         # Applying the boundary condition 
         u[0], u[-1] = u[1], u[-2]
         
