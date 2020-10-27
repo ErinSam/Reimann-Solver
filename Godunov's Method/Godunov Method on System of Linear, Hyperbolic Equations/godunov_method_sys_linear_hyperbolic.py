@@ -49,7 +49,7 @@ def initiali_tsar(length, num_data_pts, U):
     
     U[:,0], U[:,-1] = U[:,1], U[:,-2]
 
-    return u
+    return U
     
     
 def splitting_A(A):
@@ -110,7 +110,7 @@ def godunov_method_sys_linear_hyperbolic():
     A = np.array()
     
     # Creating the matrix U 
-    U = np.zeros(A.shape[0], num_data_pts + 2)
+    U = np.zeros((A.shape[0], num_data_pts + 2))
     
     # Initialising the values of U 
     U = initiali_tsar(length, num_data_pts, U)
