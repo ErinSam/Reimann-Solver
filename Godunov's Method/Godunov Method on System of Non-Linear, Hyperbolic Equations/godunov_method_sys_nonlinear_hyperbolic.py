@@ -20,6 +20,8 @@ import numpy as np
 import math as m 
 import scipy.integrate as integrate
 from iterative_scheme_for_pressure import *
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 
 
@@ -106,10 +108,92 @@ def reimann_problem(W_L, W_R):
                                             c_ratio=c_ratio)   
 
 
+    # OBTAINING WAVE SPEEDS & SOLUTION OF W @ x/t = 0 (W_0)
+    # Creating wave_speeds, ndarray, that stores absolute values of wave speeds
+    wave_speeds = np.zeros(0)
+    # Initialsing W_0 with W_R in case of the trivial case where W_L = W_R
+    W_0 = W_R 
+
+    # Obtaining Exact Solution for Left of Contact Discontinuity
+    if ( p_star <= p_L ):
+        # Left wave is an expansion wave 
+        rho_star_L = rho_L * pow(p_star/p_L, 1/c_ratio)
+        S_HL = u_L - a_L
+        S_TL = u_star - m.sqrt(c_ratio * p_star / rho_star_L)
+
+        # Adding absolute values of wave speeds to wave_speeds
+        np.append(wave_speeds, np.abs([S_HL, S_TL])
+        
+        # Setting W_0 (if possible)
+        if ( u_star > 0 ):
+            if ( S_TL > 0 ):
+                W_0 = W_L
+            elif ( S_HL > 0 ):
+                W_0[0], W_0[1], W_0[2] = tuple(rho_star_L, u_star, p_star)
+            else:
+                W_0[0] = p_L * pow(( (2/(c_ratio+1)) 
+                            + (c_ratio-1)/(a_L*(c_ratio+1)) * (u_L) ), 2*c_ratio/(c_ratio-1) )
+                W_0[1] = 2/(c_ratio+1) * ( a_L + u_L * (c_ratio-1)/2 )
+                W_0[2] = rho_L * pow(( (2/(c_ratio+1)) 
+                            + (c_ratio-1)/(a_L*(c_ratio+1)) * (u_L) ), 2/(c_ratio-1) )
+    else:
+        # Left wave is a shock wave
+        rho_star_L = rho_L * ( (p_star/p_L) 
+                        + (c_ratio-1)/(c_ratio+1) ) / ( (c_ratio-1)/(c_ratio+1)*(p_star/p_L) + 1 )
+        S_L = u_L - a_L * m.sqrt( (c_ratio+1)/(2*c_ratio) * p_star/p_L + (c_ratio-1)/(2*c_ratio) )
+
+        # Adding absolute values of wave speeds to wave_speeds
+        np.append(wave_speeds, np.abs(S_L))
+
+        # Setting W_0 (if possible)
+        if ( u_star > 0 ):
+            if ( S_L > 0 ):
+                W_0 = W_L
+            else:
+                W_0[0], W_0[1], W_0[2] = tuple(rho_star_L, u_star, p_star)
+ 
+
+    # Obtaining Exact Solution for Right of Contact Discontinuity  
+    if ( p_star <= p_R ):
+        # Right wave is an expansion wave 
+        rho_star_R = rho_R * pow(p_star/p_R, 1/c_ratio)
+        S_HR = u_R + a_R
+        S_TR = u_star + m.sqrt(c_ratio * p_star / rho_star_R)
+
+        # Adding absolute values of wave speeds to wave_speeds
+        np.append(wave_speeds, np.abs([S_HR, S_TR])
+        
+        # Setting W_0 (if possible)
+        if ( u_star < 0 ):
+            if ( S_HR < 0 ):
+                W_0 = W_R
+            elif ( S_TR > 0 ):
+                W_0[0], W_0[1], W_0[2] = tuple(rho_star_R, u_star, p_star)
+            else:
+                W_0[0] = p_R * pow(( (2/(c_ratio+1)) 
+                                - (c_ratio-1)/(a_R*(c_ratio+1)) * (u_R) ), 2*c_ratio/(c_ratio-1) )
+                W_0[1] = 2/(c_ratio+1) * ( -a_R + u_R * (c_ratio-1)/2 )
+                W_0[2] = rho_R * pow(( (2/(c_ratio+1)) 
+                                - (c_ratio-1)/(a_R*(c_ratio+1)) * (u_R) ), 2/(c_ratio-1) )
+    else:
+        # Right wave is a shock wave
+        rho_star_R = rho_R * ( (p_star/p_R) 
+                        + (c_ratio-1)/(c_ratio+1) ) / ( (c_ratio-1)/(c_ratio+1)*(p_star/p_R) + 1 )
+        S_R = u_R + a_R * m.sqrt( (c_ratio+1)/(2*c_ratio) * p_star/p_R + (c_ratio-1)/(2*c_ratio) )
+
+        # Adding absolute values of wave speeds to wave_speeds
+        np.append(wave_speeds, np.abs(S_R)
+        
+        # Setting W_0 (if possible)
+        if ( u_star < 0 ):
+            if ( S_R < 0 ):
+                W_0 = W_R
+            else:
+                W_0[0], W_0[1], W_0[2] = tuple(rho_star_R, u_star, p_star)
 
 
+    return W_0, np.max(wave_speeds)
 
-    return W_0, S_RP_max
 
 
 def godunov_method_sys_nonlinear_hyperbolic():
@@ -122,6 +206,9 @@ def godunov_method_sys_nonlinear_hyperbolic():
         
         Plots are produced at the end 
     """
+
+    # Specific Heat Ratio 
+    c_ratio = 1.4
 
     # Obtaining user's input
     length = float(input("\nEnter the length of the data line: ")) 
@@ -139,6 +226,30 @@ def godunov_method_sys_nonlinear_hyperbolic():
     # Initialising the values of W 
     W = initialisation(W)
  
+    # GODUNOV'S METHOD
+    flux = np.zeros(num_data_pts + 1)
+    max_wave_speeds = np.zeros(0)
+    
+    t = 0
+    while ( t <= time_period ):
+        for flx, i in enumerate(flux):
+            W_0, max_wave_speed = reimann_problem(W[3,i], W[3,i+1])
+            flx = np.dot(np.array([[W_0[1], W_0[0], 0],
+                                    [0, W_0[1], 1/W_0[0]],
+                                    [0, c_ratio*W_0[2], W_0[1]]), W_0)
+            np.append(max_wave_speeds, max_wave_speed)
+        
+        # Godunov Update Step
+        W[3,1:-1] += (1/np.max(max_wave_speeds)) * ( flux[:-1] - flux[1:] ) 
+
+        # Incrementing the time 
+        t += dx / np.max(max_wave_speeds)
+
+    
+    # ADD plotting feature
+
+
+
 
 
 
