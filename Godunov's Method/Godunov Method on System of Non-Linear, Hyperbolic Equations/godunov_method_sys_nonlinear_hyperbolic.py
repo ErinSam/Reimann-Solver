@@ -21,7 +21,6 @@ import math as m
 import scipy.integrate as integrate
 from iterative_scheme_for_pressure import *
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 
 
 
@@ -37,13 +36,34 @@ def initialisation(W, dx):
             W - ndarray(3, num_data_pts + 2): the initialised variable vector
     """
     
-    def rho_init():
+    def rho_init(x):
+        """User must edit this function according to initilisation of density 
+            Args:
+                x - float; 
+            Returns: 
+                rho - float; density at (x,0)
+        """
+        # ADD definition 
         return rho
     
-    def u_init():
+    def u_init(x):
+        """User must edit this function according to initialisation of velocity
+            Args:
+                x - float;
+            Returns:
+                u - float; velocity at (x,0)
+        """
+        # ADD definition
         return u 
 
-    def p_init():
+    def p_init(x):
+        """User must edit this function according to initialisation of pressure
+            Args:
+                x - float;
+            Returns: 
+                p - float; pressure at (x,0)
+        """
+        # ADD definition
         return p
 
     # Creating a list of initialisation functions
@@ -214,6 +234,7 @@ def godunov_method_sys_nonlinear_hyperbolic():
     length = float(input("\nEnter the length of the data line: ")) 
     num_data_pts = int(input("Enter the number of data (the precision to which) the 
                                 solution should be obtained for: "))
+    dx = length / num_data_pts
     time_period = float(input("\nEnter the time period for which the solution should
                                 be obtained"))
     cfl = float(input("CFL coefficient: "))
@@ -224,31 +245,72 @@ def godunov_method_sys_nonlinear_hyperbolic():
     W = np.zeros((3, num_data_pts + 2))
     
     # Initialising the values of W 
-    W = initialisation(W)
+    W = initialisation(W, dx)
  
+    # Finding how often to plot
+    plot_it = int(input("\nNumber of time increments using Godunov's Method should plots
+                            be provided: "))
+
+
     # GODUNOV'S METHOD
     flux = np.zeros(num_data_pts + 1)
     max_wave_speeds = np.zeros(0)
+    X = np.arange(0, length, dx)
     
     t = 0
+    count = 1
     while ( t <= time_period ):
         for flx, i in enumerate(flux):
             W_0, max_wave_speed = reimann_problem(W[3,i], W[3,i+1])
+
+            # F(W) = A(W) * W
             flx = np.dot(np.array([[W_0[1], W_0[0], 0],
                                     [0, W_0[1], 1/W_0[0]],
                                     [0, c_ratio*W_0[2], W_0[1]]), W_0)
+
+            # Appending the max wave speed in each Reimann Problem (RP) to max_wave_speeds
             np.append(max_wave_speeds, max_wave_speed)
         
         # Godunov Update Step
         W[3,1:-1] += (1/np.max(max_wave_speeds)) * ( flux[:-1] - flux[1:] ) 
+        W[:,0], W[:,-1] = W[:,1], W[:,-2]
+
 
         # Incrementing the time 
         t += dx / np.max(max_wave_speeds)
 
+        # ADD plotting feature 
+        if ( count % plot_it == 0 ):
+            plt.figure()
+            
+            plt.subplot(311)
+            plt.plot(X, W[0,1:-1], 'bo')
+            plt.title("Density at t = ",t)
+            plt.ylabel("Density")
+            plt.xlabel("Position")
+
+            plt.subplot(312)
+            plt.plot(X, W[1,1:-1], 'bo')
+            plt.title("Velocity at t = ",t)
+            plt.ylabel("Velocity")
+            plt.xlabel("Position")
+            
+            plt.subplot(313)
+            plt.plot(X, W[2,1:-1], 'bo')
+            plt.title("Pressure at t = ",t)
+            plt.ylabel("Pressure")
+            plt.xlabel("Position")
+
+            plt.tight_layout()
+            plt.show()
+            
+        
+        # Incrementing while-loop iteration count 
+        count += 1
+
     
-    # ADD plotting feature
 
-
+godunov_method_sys_nonlinear_hyperbolic()
 
 
 
