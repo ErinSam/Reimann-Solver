@@ -16,6 +16,7 @@
         Handling the growing instability created by small differences in L and R conditions 
         in the Reimann Problem
 
+    Using Test - 1: Sod Shock Tube Problem
 """
 # Erin Sam Joe | NITK '23 | Mechanical Engg. Major | Electrical & Electronics Engg. Minor 
 
@@ -52,6 +53,10 @@ def initialisation(W, dx, **kwargs):
                 rho - float; density at (x,0)
         """
         # ADD definition 
+        if ( x <= kwargs['x_0'] ):
+            return 1.0
+        else:
+            return 0.125
     
     def u_init(x):
         """User must edit this function according to initialisation of velocity
@@ -61,6 +66,10 @@ def initialisation(W, dx, **kwargs):
                 u - float; velocity at (x,0)
         """
         # ADD definition
+        if ( x <= kwargs['x_0'] ):
+            return 0.75
+        else:
+            return 0.0
 
     def p_init(x):
         """User must edit this function according to initialisation of pressure
@@ -70,6 +79,10 @@ def initialisation(W, dx, **kwargs):
                 p - float; pressure at (x,0)
         """
         # ADD definition
+        if ( x <= kwargs['x_0'] ):
+            return 1.0
+        else:
+            return 0.1
         
 
     # Creating a list of initialisation functions
@@ -403,5 +416,4 @@ def godunov_method_sys_nonlinear_hyperbolic():
 
     
 godunov_method_sys_nonlinear_hyperbolic()
-
 
