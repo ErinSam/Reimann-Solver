@@ -15,7 +15,6 @@ import numpy as np
 import math as m 
 
 
-c_ratio = 1.4
 
 def pvrs(W_L, W_R, **kwargs):
     """ PRIMITIVE VARIABLE REIMANN SOLVER 
@@ -38,6 +37,10 @@ def pvrs(W_L, W_R, **kwargs):
             rho_R_star: float; Right star region density
     """
     
+    # Heat Constant Ratio
+    c_ratio = 1.4
+
+    # Obtaining parameters from primitive variable vectors 
     rho_L, u_L, p_L = W_L[0], W_L[1], W_L[2]
     rho_R, u_R, p_R = W_R[0], W_R[1], W_R[2]
     a_L, a_R = m.sqrt(c_ratio * p_L / rho_L), m.sqrt(c_ratio * p_R / rho_R)
@@ -84,6 +87,10 @@ def trrs(W_L, W_R):
             rho_R_star: float; Right star region density
     """
 
+    # Heat Constant Ratio
+    c_ratio = 1.4
+
+    # Obtaining parameters from primitive variable vectors 
     rho_L, u_L, p_L = W_L[0], W_L[1], W_L[2]
     rho_R, u_R, p_R = W_R[0], W_R[1], W_R[2]
     a_L, a_R = m.sqrt(c_ratio * p_L / rho_L), m.sqrt(c_ratio * p_R / rho_R)
@@ -131,6 +138,9 @@ def tsrs(W_L, W_R, p_0):
             rho_L_star: float; Left star region density
             rho_R_star: float; Right star region density
     """
+
+    # Heat Constant Ratio
+    c_ratio = 1.4
 
     rho_L, u_L, p_L = W_L[0], W_L[1], W_L[2]
     rho_R, u_R, p_R = W_R[0], W_R[1], W_R[2]
@@ -182,10 +192,109 @@ def anrs(W_L, W_R, **kwargs):
                 'pvrs':
 
         Returns:
+            W_0: ndarray(3,); Solution of the RP @ x/t = 0 as a vector of primitive variables
     """
 
+    # Heat Constant Ratio
+    c_ratio = 1.4
     
     # Assigning value for the Switching Parameter
     switching_param = 2 
 
+    # Obtaining parameters from primitive variable vectors 
+    rho_L, u_L, p_L = W_L[0], W_L[1], W_L[2]
+    rho_R, u_R, p_R = W_R[0], W_R[1], W_R[2]
+    a_L, a_R = m.sqrt(c_ratio * p_L / rho_L), m.sqrt(c_ratio * p_R / rho_R)
+
+    # Using PVRS for first approximation
+    p_star, u_star, rho_L_star, rho_R_star = pvrs(W_L, W_R)
+
+    # Creating primitive variable solution vector
+    W_0 = np.zeros(3)
+
+    # Checking if more robust schemes: TRRS or TSRS should be used
+    p_min, p_max = min(p_L,p_R), max(p_L,p_R) 
+    switch_check = p_max/p_min
     
+    if ( switch_check > switching_param | p_star < p_min | p_star > p_max ):
+        if ( p_star < p_min ):
+            p_star, u_star, rho_L_star, rho_R_star = trrs(W_L, W_R)
+        else:
+            p_star, u_star, rho_L_star, rho_R_star = tsrs(W_L, W_R, p_star)
+
+    # Finding the condition at origin (@ x/t=0) of RP, W(0)
+    if ( u_star > 0 ):
+        # Star region moves to the right
+
+        if ( p_star > p_L ):
+            # Calculating Left Shock Speed
+            A_L = 2 / ( (c_ratio+1)*rho_L )
+            B_L = (c_ratio-1)/(c_ratio+1) * rho_L         
+            S_L = u_L - pow( (p_star + B_L)/A_L, 0.5 ) / rho_L
+
+            if ( S_L > 0 ):
+                # Left Region Properties Used
+                W_0 = W_L
+            else:
+                # Left Star Region Properties Used 
+                W_0[0], W_0[1], W_0[2] = W_L[0], W_L[1], W_L[2] 
+                
+        else:
+            # Calculating Left Rarefaction Head & Tail Speed
+            a_L_star = a_L * pow(p_star/p_L, (c_ratio-1)/(2*c_ratio))
+            S_HL = u_L - a_L
+            S_TL = u_star - a_L_star
+            
+            if ( S_TL > 0 ):
+                # Left Region Properties Used 
+                W_0 = W_L
+            elif ( S_HL < 0 ):
+                # Left Star Region Properties Used
+                W_0[0], W_0[1], W_0[2] = W_L[0], W_L[1], W_L[2] 
+            else:
+                # Left Fan Properties Used
+                w_0[0] = rho_L * pow( ( 2/(c_ratio+1) + (c_ratio-1)/((c_ratio+1)*a_L) \
+                            * u_L), 2/(c_ratio - 1) )
+                W_0[1] = 2 / (c_ratio+1) * ( a_L + (c_ratio-1)/2 * u_L )
+                W_0[2] = p_L * pow( ( 2/(c_ratio+1) + (c_ratio-1)/((c_ratio+1)*a_L) \
+                            * u_L), 2*c_ratio/(c_ratio - 1) ) 
+    
+    elif ( u_star < 0 ):
+        # Star region moves to the left
+
+        if ( p_star > p_R ):
+            # Calculating Right Shock Speed
+            A_R = 2 / ( (c_ratio+1)*rho_R )
+            B_R = (c_ratio-1)/(c_ratio+1) * rho_R         
+            S_R = u_L - pow( (p_star + B_R)/A_R, 0.5 ) / rho_R
+
+            if ( S_R < 0 ):
+                # Right Region Properties Used
+                W_0 = W_R
+            else:
+                # Right Star Region Properties Used 
+                W_0[0], W_0[1], W_0[2] = W_R[0], W_R[1], W_R[2] 
+
+        else:
+            # Calculating Right Rarefaction Head & Tail Speed
+            a_R_star = a_R * pow( p_star/p_R, (c_ratio-1)/(2*c_ratio) )
+            S_HR = u_R + a_R
+            S_TR = u_star + a_R_star
+
+            if ( S_HR < 0 ):
+                # Right Region Properties Used
+                W_0 = W_R
+            elif ( S_TR > 0):
+                # Right Star Region Properties Used 
+                W_0[0], W_0[1], W_0[2] = W_R[0], W_R[1], W_R[2] 
+            else:
+                # Right Fan Properties used 
+                w_0[0] = rho_R * pow( ( 2/(c_ratio+1) - (c_ratio-1)/((c_ratio+1)*a_R) \
+                            * u_R), 2/(c_ratio - 1) )
+                W_0[1] = 2 / (c_ratio+1) * ( - a_R + (c_ratio-1)/2 * u_R )
+                W_0[2] = p_R * pow( ( 2/(c_ratio+1) - (c_ratio-1)/((c_ratio+1)*a_R) \
+                            * u_R), 2*c_ratio/(c_ratio - 1) ) 
+            
+
+    # Return Statement 
+    return W_0
