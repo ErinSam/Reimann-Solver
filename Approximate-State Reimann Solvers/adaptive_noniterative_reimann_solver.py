@@ -295,6 +295,12 @@ def anrs(W_L, W_R, **kwargs):
                 W_0[2] = p_R * pow( ( 2/(c_ratio+1) - (c_ratio-1)/((c_ratio+1)*a_R) \
                             * u_R), 2*c_ratio/(c_ratio - 1) ) 
             
+    else:
+        # The Contact wave is stationary; standing wave
+        # Arbitrarily assigning the right star region properties
+        # FIXME 
+        W_0[0], W_0[1], W_0[2] = W_R[0], W_R[1], W_R[2] 
+    
 
     # Return Statement 
     return W_0
