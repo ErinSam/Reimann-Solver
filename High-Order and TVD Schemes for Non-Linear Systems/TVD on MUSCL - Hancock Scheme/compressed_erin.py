@@ -42,3 +42,34 @@ def consv_prim_1D(U):
     return W
 
 
+
+def flux_euler_1D(U):
+    """
+        Function that evaluates the conserved flux of the 1D Euler Equations
+
+        Args:
+            U: ndarray(3,); conserved variables vector
+
+        Returns:
+            flux: ndarray(3,); flux, F(U)
+    """
+    W = consv_prim_1D(U)
+
+    flux = np.array([U[1],
+                        U[1]*W[1] + W[2],
+                        W[1]*(U[2] + W[2])])
+
+    return flux
+
+
+
+
+
+
+
+
+
+
+
+
+

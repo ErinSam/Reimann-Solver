@@ -9,40 +9,48 @@
 import numpy as np 
 import math as m
 import matplotlib.pyplot as plt
+import slope_limiters as slp
+import compressed_erin as cmprin
 
 
 
-if __name__ == "__main__":
-    main()
 
 
 
-def intialisation():
+def intialisation(U):
     """
         Function that initialises the initial data line
 
         Args:
+            U: ndarray(M+2,3); the conserved elements 2D array for the time step 
 
         Returns:
+            U: ndarray(M+2,3); the conserved elements 2D array for the time step after applying 
+                                the initial coniditons to it
     """
     # TODO
 
 
 
-def boundary_conditions():
+def boundary_conditions(U):
     """
         Function that applies the boundary conditions according to our choice of 
         boundary conditions
         
         Args: 
+            U: ndarray(M+2,3); the conserved elements 2D array for the time step 
 
         Returns: 
+            U: ndarray(M+2,3); the conserved elements 2D array for the time step after applying 
+                                the boundary coniditons to it
     """
     # Transmissive Boundary Conditions
-    # TODO
+    U[0], U[M+1] = U[1], U[M]
 
     # Relfective Boundary Conditions 
     # TODO
+
+    return U
 
 
 
@@ -84,15 +92,28 @@ def RP_solver():
 
 
 
-def time_step_size():
+def time_step_size(U, cfl, dx):
     """ 
         Function that calculates the size of the time step
 
         Args:
+            U: ndarray(M+2,3); the conserved elements 2D array for the time step 
+            cfl: float; courant number 
+            dx: float; mesh size
 
         Returns:
+            dt: float; the size of the time step 
     """
-    # TODO
+    c_ratio = 1.4
+    
+    conv_prim = np.vectorize(cmprin.consv_prim_1D)
+    W = conv_prim(U)
+
+    speeds = abs(W[:,1]) + m.sqrt(c_ratio * W[:,2] / W[:,0])
+
+    dt = cfl * dx / np.max(speeds)
+
+    return dt
 
 
 
@@ -121,8 +142,32 @@ def plotter()
 
 
 def main():
+
+    # Obtain the following from the user
+    print("\n\nEnter the following data")
+    cfl = float(input("CFL Number: "))
+    num_data_pts = int(input("Number of data points: "))
+    time = float(input("Time to which the solution should be obtained: "))
+    print("\nThe length of the data line is assumed to be 1m. Starts from 0 and ends at 1m")
+
+    # Creating the arrays given the user input 
+    U = np.zeros((M+2, 3))
+
+    # Initialising the array
+    # TODO
+
+    # Applying the boundary conditions
+    U = boundary_conditions(U)
+
+    # Calling the iteration step (marching in time)
     # TODO
 
 
 
+
+
+
+
+if __name__ == "__main__":
+    main()
 
