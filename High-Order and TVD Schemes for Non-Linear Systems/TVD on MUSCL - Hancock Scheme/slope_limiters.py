@@ -15,19 +15,25 @@ import math as m
 
 
 
-if __name__ == "__main__":
-    main()
-
-
-
 def basic():
     # TODO
 
 
 
-def xi_R(r):
-    # TODO
+def xi_R(r, beta, omega):
+    """
+        Function that calculates the value of xi_R that is required in all the slope
+        limters. 
 
+        Args:
+            r: float; upwind ratio
+
+        Returns:
+            val: float; the calculated value of xi_R
+    """
+
+    val = 2 * beta / (1 - omega + (1+omega)*r)
+    return val
 
 
 
@@ -35,26 +41,32 @@ def xi_L(r):
     # TODO
 
 
-def SUPERBEE(r, xi_R):
+
+def SUPERBEE(r, beta=1, omega=0):
     """SUPERBEE Slope Limiter 
 
         Args:
-            r: float; upwind ratio
-            xi_R: function; the xi_R function that is required for calculation
+            r: ndarray(3,); upwind ratio
+            beta: float; value of beta required for the calculation 
+            omega: float; value of omega that is used in the calculation of the simple slope
 
         Returns:
             xi_SB: float; the SUPERBEE slope limiter
     """
 
-    if ( r <= 0 ):
-        return 0
-    elif ( r <= 0.5 ):
-        return 2*r
-    elif ( r <= 1 ):
-        return 1
-    else: 
-        return min(r, xi_R(r), 2)
+    xi_SB = np.zeros(3)
 
+    for i, val in enumerate(r):
+        if ( val <= 0 ):
+            xi_SB[i] = 0
+        elif ( val <= 0.5 ):
+            xi_SB[i] = 2*val
+        elif ( val <= 1 ):
+            xi_SB[i] = 1
+        else:
+            xi_SB[i] = min(r, xi_R(r), 2)
+
+    return xi_SB
 
 
 
@@ -68,25 +80,37 @@ def van_Albada():
 
 
 
-def MINBEE(r, xi_R):
+def MINBEE(r, beta=1, omega=0):
     """MINBEE Slope Limiter 
 
         Args:
-            r: float; upwind ratio
-            xi_R: function; the xi_R function that is required for calculation
+            r: ndarray(3,); upwind ratio
+            beta: float; value of beta required for the calculation 
+            omega: float; value of omega that is used in the calculation of the simple slope
 
         Returns:
-            xi_SB: float; the SUPERBEE slope limiter
+            xi_MB: ndarray(3,); the SUPERBEE slope limiter
     """
-    
-    if ( r <= 0 ):
-        return 0
-    elif ( r <= 1 ):
-        return r
-    else:
-        return min(1, xi_R)
+   
+    xi_MB = np.zeros(3)
+
+    for i, val in enumerate(r):
+        if ( val <= 0 ):
+            xi_MB[i] = 0
+        elif ( val <= 1 ):
+            xi_MB[i] = val
+        else:
+            xi_MB[i] = min(1, xi_R(r))
+
+    return xi_MB
 
 
 
 def main():
     # TODO
+
+
+
+if __name__ == "__main__":
+    main()
+
