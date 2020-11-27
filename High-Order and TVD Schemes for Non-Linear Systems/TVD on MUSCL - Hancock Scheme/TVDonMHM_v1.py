@@ -14,9 +14,6 @@ import compressed_erin as cmprin
 
 
 
-
-
-
 def intialisation(U):
     """
         Function that initialises the initial data line
@@ -29,6 +26,8 @@ def intialisation(U):
                                 the initial coniditons to it
     """
     # TODO
+    raise NotImplementedError
+    return
 
 
 
@@ -157,6 +156,24 @@ def time_step_size(U, cfl, dx):
 
 
 
+def RP():
+    """
+        Function that obtains the solution of the RP using the choice Reimann Solver. Calculates
+        the intercell flux
+
+        Args:
+            U_R: ndarray(3,); driven region conserved elements vector
+            U_L: ndarray(3,); driver region conserved elements vector
+
+        Returns:
+            intercell_flux: ndarray(3,); the flux of the solution to RP at the origin
+    """
+    # TODO
+    raise NotImplementedError
+    return
+
+
+
 def stepping_time():
     """ 
         Function that calculates the values of the conserved variables at the next time step
@@ -166,6 +183,8 @@ def stepping_time():
         Returns:
     """
     # TODO
+    raise NotImplementedError
+    return
 
 
 
@@ -178,6 +197,8 @@ def plotter()
         Returns:
     """
     # TODO
+    raise NotImplementedError
+    return
 
 
 
@@ -202,6 +223,8 @@ def main():
     # Calling the iteration step (marching in time)
     # TODO
 
+    raise NotImplementedError
+    return
 
 
 
