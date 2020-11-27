@@ -54,41 +54,81 @@ def boundary_conditions(U):
 
 
 
-def bev():
+def bev(U, dt, dx, M):
     """ BOUNDARY EXTRAPOLATED VALUES
         Function that calculates the boundary extrapolated values. Results are used to obtain the
         evolved BEVs and they depend a lot on the choice of the slope limter chosen.
 
         Args:
+            U: ndarray(M+2,3); the conserved elements 2D array for the time step 
+            dt: float; size of the time step 
+            dx: float; mesh size
+            M: int; number of mesh points
 
         Returns:
     """
-    # TODO
+    # Creating ndarray for boundary extrapolated values
+    U_bev = np.zeros((M+2,2,3))
+
+    # Obtaining the intercell element-wise jump vector (intrcll_delta)
+    intrcll_delta = U[1:] - U[:-1]
+
+    # Calculating upwind ratio
+    r = intrcll_delta[:-1] / intrcll_delta[1:]
+
+    # Calculating the initial slopes
+    delta = 0.5 * (1+omega) * intrcll_delta[:-1] + 0.5 * (1-omega) * intrcll_delta[1:]
+
+    # Obtaining slope limiter
+    XI = np.zeros(r.shape)
+    for i, val in enumerate(r):
+        XI[i] = slp.SUPERBEE(val)                       # FIXME
+
+    # Calculcating the limited slopes
+    limited_slope = XI * delta
+    
+    # Obtaining boundary extrapolated values
+    U_bev[1:-1,0] = U[1:-1] - limited_slope/2
+    U_bev[1:-1,1] = U[1:-1] + limited_slope/2
+
+    # Applying zero slope boundary conditions to the boundary BEVs
+    U_bev[0,:] = U[0]
+    U_bev[-1,:] = U[-1]
+
+    # Obtaining Evolved BEVs
+    U_ebev = evolved_bev(U_bev, dt, dx)
+
+    return U_ebev
 
 
 
-def evolved_bev():
+def evolved_bev(U_bev, dt, dx):
     """
         Function that caluclates the evolved boundary extrapolated values 
         This results of this function are then used to obtain the intercell flux by solvng the RP
 
         Args:
+            U_bev: ndarray(M+2,2,3); the boundary extrapolated values of the conserved elements
+            dt: float; size of the time step 
+            dx: float; mesh size
 
         Returns:
+            U_ebev: ndarray(M+2,2,3); evolved boundary extrapolated values of the conserved vars
     """
-    # TODO
+    # Creatin ndarray for eveolved boundary extrapolated values
+    U_ebev = np.zeros(U_bev.shape)
 
+    # Calculating the flux function
+    F = np.empty(U_bev.shape)
+    for i, val_1 in enumerate(U_bev):
+        for j, val_2 in enumerate(val_1):
+            F[i,j] = cmprin.flux_euler_1D(val_2)
 
-def RP_solver():
-    """
-        Function that calculates value of the intercell numerical flux at the origin of the RP
-        The RP(bar_U_L, bar_U_R)
+    # Calculating evolved boundary extrapolated values
+    U_ebev[:,0,:] = U_bev[:,0,:] + 0.5*dt/dx * (F[:,0,:] - F[:,1,:])
+    U_ebev[:,1,:] = U_bev[:,1,:] + 0.5*dt/dx * (F[:,0,:] - F[:,1,:])
 
-        Args:
-
-        Returns:
-    """
-    # TODO
+    return U_ebev 
 
 
 
