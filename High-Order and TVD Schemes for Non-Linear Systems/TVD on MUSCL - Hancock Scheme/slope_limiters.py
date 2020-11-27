@@ -17,6 +17,8 @@ import math as m
 
 def basic():
     # TODO
+    raise NotImplementedError
+    return
 
 
 
@@ -39,6 +41,8 @@ def xi_R(r, beta, omega):
 
 def xi_L(r):
     # TODO
+    raise NotImplementedError
+    return
 
 
 
@@ -64,7 +68,7 @@ def SUPERBEE(r, beta=1, omega=0):
         elif ( val <= 1 ):
             xi_SB[i] = 1
         else:
-            xi_SB[i] = min(r, xi_R(r), 2)
+            xi_SB[i] = min(val, xi_R(val, beta, omega), 2)
 
     return xi_SB
 
@@ -72,11 +76,15 @@ def SUPERBEE(r, beta=1, omega=0):
 
 def van_Leer():
     # TODO
+    raise NotImplementedError
+    return
 
 
 
 def van_Albada():
     # TODO
+    raise NotImplementedError
+    return
 
 
 
@@ -100,7 +108,7 @@ def MINBEE(r, beta=1, omega=0):
         elif ( val <= 1 ):
             xi_MB[i] = val
         else:
-            xi_MB[i] = min(1, xi_R(r))
+            xi_MB[i] = min(1, xi_R(val, beta, omega))
 
     return xi_MB
 
@@ -108,6 +116,8 @@ def MINBEE(r, beta=1, omega=0):
 
 def main():
     # TODO
+    raise NotImplementedError
+    return
 
 
 
