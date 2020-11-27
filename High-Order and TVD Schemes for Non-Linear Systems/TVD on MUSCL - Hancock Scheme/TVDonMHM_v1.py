@@ -11,10 +11,11 @@ import math as m
 import matplotlib.pyplot as plt
 import slope_limiters as slp
 import compressed_erin as cmprin
+import hllc_reimann_solver as hllc
 
 
 
-def intialisation(U):
+def initialisation(U):
     """
         Function that initialises the initial data line
 
@@ -156,39 +157,67 @@ def time_step_size(U, cfl, dx):
 
 
 
-def RP():
+def RP(U_ebev, M, **kwargs):
     """
         Function that obtains the solution of the RP using the choice Reimann Solver. Calculates
         the intercell flux
+        For now, this function just directly uses the HLLC reimann solver. 
 
         Args:
-            U_R: ndarray(3,); driven region conserved elements vector
-            U_L: ndarray(3,); driver region conserved elements vector
+            U_ebev: ndarray(M+2,2,3); the boundary extrapolated values of the conserved elements
+            M: int; number of mesh points
+            ...
+            **rs: string; reimann solver to be used
+            ...
 
         Returns:
-            intercell_flux: ndarray(3,); the flux of the solution to RP at the origin
+            intercell_flux: ndarray(M+1,3); the flux of the solution to RP at the origin
     """
-    # TODO
-    raise NotImplementedError
-    return
+    # Splitting the evolved BEVs into separate vectors for right & left EBEV for each cell
+    ebev_L = U_ebev[:,0]
+    ebev_R = U_ebev[:,1]
+
+    # Forming the flux vector
+    intercell_flux = np.empty(ebev_R.shape)
+    for i in range(M+1):
+        intercell_flux[i] = hllc.hllc_1D(ebev_L[i], ebev_R[i])
+
+    return intercell_flux
 
 
 
-def stepping_time():
+def stepping_time(U, dt, dx, M):
     """ 
         Function that calculates the values of the conserved variables at the next time step
 
         Args:
+            U: ndarray(M+2,3); the conserved elements 2D array for the time step 
+            dt: float; size of the time step 
+            dx: float; mesh size
+            M: int; number of mesh points
 
         Returns:
+            time_evolved_U: ndarray(M+2,3); the conserved variables for the next time step
     """
-    # TODO
-    raise NotImplementedError
-    return
+    # Obtain the evolved boundary extrapolated values
+    U_ebev = bev(U, dt, dx, M)
+
+    # Solving the RPs for the intercell flux
+    intercell_flux = RP(U_ebev, M)
+
+    # Calculating conserved variable vector for the next time step
+    time_evolved_U = np.empty(U.shape)
+    time_evolved_U = U + dt/dx * (intercell_flux[:-1] - intercell_flux[1:])
+
+    # Applying boundary conditions
+    time_evolved_U = boundary_conditions(time_evolved_U)
+
+    return time_evolved_U
+    
 
 
 
-def plotter()
+def plotter():
     """ 
         Plots stuff
 
@@ -204,33 +233,49 @@ def plotter()
 
 def main():
 
-    # Obtain the following from the user
+    # Obtain DATA from the user
     print("\n\nEnter the following data")
     cfl = float(input("CFL Number: "))
     num_data_pts = int(input("Number of data points: "))
     time = float(input("Time to which the solution should be obtained: "))
     print("\nThe length of the data line is assumed to be 1m. Starts from 0 and ends at 1m")
+    plot_freq = int(input("\nFrequency of plotting (based on number of time steps): "))
+
+
+    # Initialising some values 
+    dx = 1/M
 
     # Creating the arrays given the user input 
     U = np.zeros((M+2, 3))
 
     # Initialising the array
-    # TODO
+    U = initialisation(U)
 
     # Applying the boundary conditions
     U = boundary_conditions(U)
 
     # Calling the iteration step (marching in time)
-    # TODO
+    count = 1
+    march_time = 0
 
-    raise NotImplementedError
+    while (march_time <= time):
+        if ( count <= 5 ):
+            dt = time_step_size(U, 0.2, dx)
+        else: 
+            dt = time_step_size(U, cfl, dx)
+        march_time += dt
+
+        # Obtaining conserved variable vector at march_time 
+        U = stepping_time(U, dt, dx, M) 
+        
+        # Producing Plots
+        if ( count % plot_freq == 0 ):
+            # TODO
+        
+
     return
 
 
 
-
-
-
-if __name__ == "__main__":
-    main()
-
+#if __name__ == "__main__":
+#    main()
