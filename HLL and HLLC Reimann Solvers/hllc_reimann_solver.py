@@ -113,7 +113,7 @@ def hllc(U_L, U_R):
         F_L = np.array([f_1, f_2, f_3])
         F = F_L
     
-    elif ( S_L <= 0 & S_star >= 0 ):
+    elif ( (S_L <= 0) & (S_star >= 0) ):
         # Flux is calculated from the LEFT STAR region
         f_1 = rho_L * u_L
         f_2 = rho_L * pow(u_L,2) + p_L
@@ -122,7 +122,7 @@ def hllc(U_L, U_R):
         F_L = np.array([f_1, f_2, f_3])
         F = F_L + S_L * (U_k_star(U_L, W_L, S_L) - U_L)
 
-    elif ( S_star <= 0 & S_R >= 0 ):
+    elif ( (S_star <= 0) & (S_R >= 0) ):
         # Flux is calculated from the RIGHT STAR region
         f_1 = rho_R * u_R
         f_2 = rho_R * pow(u_R,2) + p_R
