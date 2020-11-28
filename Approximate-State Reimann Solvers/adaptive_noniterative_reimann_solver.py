@@ -216,7 +216,7 @@ def anrs(W_L, W_R, **kwargs):
     p_min, p_max = min(p_L,p_R), max(p_L,p_R) 
     switch_check = p_max/p_min
     
-    if ( switch_check > switching_param | p_star < p_min | p_star > p_max ):
+    if ( (switch_check > switching_param) | (p_star < p_min) | (p_star > p_max) ):
         if ( p_star < p_min ):
             p_star, u_star, rho_L_star, rho_R_star = trrs(W_L, W_R)
         else:
