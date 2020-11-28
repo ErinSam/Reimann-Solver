@@ -113,7 +113,7 @@ def trrs(W_L, W_R):
     # Calculating Star Region Properties
     p_star = m.sqrt( (a_L + a_R - (c_ratio-1)/2 * (u_R-u_L)) \
                 / ( a_L/pow(p_L,z) + a_R/pow(p_R,z) ), 1/z)
-    u_star = 0.5 * (u_L + u_R) + 0.5 ( f_k(p_star, W_R) - f_k(p_star, W_L) )
+    u_star = 0.5 * (u_L + u_R) + 0.5 * ( f_k(p_star, W_R) - f_k(p_star, W_L) )
     rho_L_star = rho_L * pow(p_star/p_L, 1/c_ratio)
     rho_R_star = rho_R + pow(p_star/p_R, 1/c_ratio) 
 
