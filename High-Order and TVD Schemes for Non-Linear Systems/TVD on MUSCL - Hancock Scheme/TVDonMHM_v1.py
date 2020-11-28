@@ -15,18 +15,23 @@ import hllc_reimann_solver as hllc
 
 
 
-def initialisation(U):
+def initialisation(U, L, M):
     """
         Function that initialises the initial data line
 
         Args:
             U: ndarray(M+2,3); the conserved elements 2D array for the time step 
+            L: float; length of the data line
+            M: int; number of mesh points
 
         Returns:
             U: ndarray(M+2,3); the conserved elements 2D array for the time step after applying 
                                 the initial coniditons to it
     """
     # TODO
+
+
+    # Defintion of the initial conditions
     raise NotImplementedError
     return
 
@@ -45,7 +50,7 @@ def boundary_conditions(U):
                                 the boundary coniditons to it
     """
     # Transmissive Boundary Conditions
-    U[0], U[M+1] = U[1], U[M]
+    U[0], U[-1] = U[1], U[-2]
 
     # Relfective Boundary Conditions 
     # TODO
@@ -54,10 +59,12 @@ def boundary_conditions(U):
 
 
 
-def bev(U, dt, dx, M):
+def bev(U, dt, dx, M, omega=0.5):
     """ BOUNDARY EXTRAPOLATED VALUES
         Function that calculates the boundary extrapolated values. Results are used to obtain the
         evolved BEVs and they depend a lot on the choice of the slope limter chosen.
+
+        CAUTION: I have no idea what to take omega as!!
 
         Args:
             U: ndarray(M+2,3); the conserved elements 2D array for the time step 
@@ -71,13 +78,19 @@ def bev(U, dt, dx, M):
     U_bev = np.zeros((M+2,2,3))
 
     # Obtaining the intercell element-wise jump vector (intrcll_delta)
-    intrcll_delta = U[1:] - U[:-1]
+    intercell_data = U[1:] - U[:-1]
 
     # Calculating upwind ratio
-    r = intrcll_delta[:-1] / intrcll_delta[1:]
+    r = np.empty(((U_bev.shape[0] - 2), 3))
+    for i in range(r.shape[0]):
+        for j in range(3):
+            if ( (intercell_data[i,j] == 0) | (intercell_data[i+1,j] == 0) ):
+                r[i,j] = 0
+            else:
+                r[i,j] = intercell_data[i,j] / intercell_data[i+1,j]
 
     # Calculating the initial slopes
-    delta = 0.5 * (1+omega) * intrcll_delta[:-1] + 0.5 * (1-omega) * intrcll_delta[1:]
+    delta = 0.5 * (1+omega) * intercell_data[:-1] + 0.5 * (1-omega) * intercell_data[1:]
 
     # Obtaining slope limiter
     XI = np.zeros(r.shape)
@@ -146,10 +159,12 @@ def time_step_size(U, cfl, dx):
     """
     c_ratio = 1.4
     
-    conv_prim = np.vectorize(cmprin.consv_prim_1D)
-    W = conv_prim(U)
+    # Converting the entire vector into the prim variables for ease of calculation
+    W = np.empty(U.shape)
+    for i, val in enumerate(U):
+        W[i] = cmprin.consv_prim_1D(val)
 
-    speeds = abs(W[:,1]) + m.sqrt(c_ratio * W[:,2] / W[:,0])
+    speeds = np.abs(W[:,1]) + np.sqrt(c_ratio * W[:,2] / W[:,0])
 
     dt = cfl * dx / np.max(speeds)
 
@@ -174,13 +189,12 @@ def RP(U_ebev, M, **kwargs):
             intercell_flux: ndarray(M+1,3); the flux of the solution to RP at the origin
     """
     # Splitting the evolved BEVs into separate vectors for right & left EBEV for each cell
-    ebev_L = U_ebev[:,0]
-    ebev_R = U_ebev[:,1]
+    ebev_L, ebev_R = U_ebev[:,0], U_ebev[:,1] 
 
     # Forming the flux vector
-    intercell_flux = np.empty(ebev_R.shape)
+    intercell_flux = np.empty(((ebev_R.shape[0]-1),3))
     for i in range(M+1):
-        intercell_flux[i] = hllc.hllc_1D(ebev_L[i], ebev_R[i])
+        intercell_flux[i] = hllc.hllc_1D(ebev_R[i], ebev_L[i+1])
 
     return intercell_flux
 
@@ -207,7 +221,7 @@ def stepping_time(U, dt, dx, M):
 
     # Calculating conserved variable vector for the next time step
     time_evolved_U = np.empty(U.shape)
-    time_evolved_U = U + dt/dx * (intercell_flux[:-1] - intercell_flux[1:])
+    time_evolved_U[1:-1] = U[1:-1] + dt/dx * (intercell_flux[:-1] - intercell_flux[1:])
 
     # Applying boundary conditions
     time_evolved_U = boundary_conditions(time_evolved_U)
@@ -217,17 +231,50 @@ def stepping_time(U, dt, dx, M):
 
 
 
-def plotter():
+def plotter(U, count, time):
     """ 
         Plots stuff
 
         Args:
+            U: ndarray(M+2,3); the conserved elements 2D array for the time step 
 
-        Returns:
     """
+    
+    # Obtaining vector in form of the primitive variables for ease of plotting
+    W = np.empty(U.shape)
+    for i, val in enumerate(U):
+        W[i] = cmprin.consv_prim_1D(val)
+
+    X = np.linspace(0,1,num=U.shape[0]-2)
+
+    # Plotting variables
+    plt.figure()
+    plt.suptitle("Time t = " + str(time))
+
+    plt.subplot(311)
+    plt.plot(X, W[1:-1,0], 'bo-', linewidth=0.25, markersize=0.25)
+    plt.title("Density vs Position")
+    plt.ylabel("Density (kg/m^3)")
+    plt.xlabel("Position (m)")
+
+    plt.subplot(312)
+    plt.plot(X, W[1:-1,1], 'bo-', linewidth=0.25, markersize=0.25)
+    plt.title("Velocity vs Position")
+    plt.ylabel("Velocity (m/s^2)")
+    plt.xlabel("Position (m)")
+    
+    plt.subplot(313)
+    plt.plot(X, W[1:-1,2], 'bo-', linewidth=0.25, markersize=0.25)
+    plt.title("Pressure vs Position")
+    plt.ylabel("Pressure (Pa)")
+    plt.xlabel("Position (m)")
+
+    plt.tight_layout()
+    plt.savefig('test-##_itn-' + str(count) + '.png')
+#    plt.show()
+
+    # Plotting Residuals
     # TODO
-    raise NotImplementedError
-    return
 
 
 
@@ -236,7 +283,7 @@ def main():
     # Obtain DATA from the user
     print("\n\nEnter the following data")
     cfl = float(input("CFL Number: "))
-    num_data_pts = int(input("Number of data points: "))
+    M = int(input("Number of data points: "))
     time = float(input("Time to which the solution should be obtained: "))
     print("\nThe length of the data line is assumed to be 1m. Starts from 0 and ends at 1m")
     plot_freq = int(input("\nFrequency of plotting (based on number of time steps): "))
@@ -249,7 +296,7 @@ def main():
     U = np.zeros((M+2, 3))
 
     # Initialising the array
-    U = initialisation(U)
+    U = initialisation(U, M)
 
     # Applying the boundary conditions
     U = boundary_conditions(U)
@@ -270,12 +317,11 @@ def main():
         
         # Producing Plots
         if ( count % plot_freq == 0 ):
-            # TODO
+            plotter(U, count, march_time)
         
 
-    return
 
 
 
-#if __name__ == "__main__":
-#    main()
+if __name__ == "__main__":
+    main()
